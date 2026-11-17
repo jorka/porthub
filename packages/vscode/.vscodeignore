@@ -7,3 +7,5 @@ test/**
 .vscode-test/**
 images/*.svg
 images/icon-source.png
+images/screenshot.png
+images/demo.gif

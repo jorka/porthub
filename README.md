@@ -1,8 +1,10 @@
-# Port Hub
+# Port Hub: Kill Process on Port in VS Code
 
-**See which process is holding which port, and kill it in one click, right next to your terminal.**
+**See what is using a port, which project started it, and kill it in one click, right next to your terminal.** A port manager for VS Code, Cursor and other VS Code-based editors, on macOS, Linux and Windows.
 
-When you run several dev servers, databases and tools at once, sooner or later you hit `EADDRINUSE: address already in use :::3000` and have no idea what is on port 3000. Port Hub adds a **Port Hub** tab to the bottom panel (next to Terminal, Problems and Output) that lists every listening TCP port with:
+![Port Hub demo: filtering ports, fixing a "port already in use" error with Kill & Run Again, killing a process on a port, killing several at once, and showing hidden app ports](https://raw.githubusercontent.com/jorka/porthub/main/packages/vscode/images/demo.gif)
+
+When you run several dev servers, databases and tools at once, sooner or later you hit `EADDRINUSE: address already in use :::3000` (or "Port 3000 is already in use") and have no idea what is on port 3000. Port Hub adds a **Port Hub** tab to the bottom panel (next to Terminal, Problems and Output) that lists every listening TCP port on localhost with:
 
 - the **process** and **PID**
 - the **folder it was started from**, so you can tell *which project* is holding the port (rows from the open workspace get a `this workspace` badge)
@@ -10,9 +12,9 @@ When you run several dev servers, databases and tools at once, sooner or later y
 - **uptime**, **memory** and **CPU** (when busy) of the process
 - the **VS Code terminal** it was started from (click to jump there)
 - a link to **open it in the browser** when it's a web server
-- a **Kill** button (Shift+click to force kill)
+- a **Kill** button (Shift+click to force kill), or **Stop** for Docker containers
 
-It works on **macOS, Linux and Windows**.
+No more `lsof -i :3000`, `netstat -ano | findstr :3000` or `npx kill-port 3000`. It works on **macOS, Linux and Windows**, and in remote windows (WSL, SSH, Dev Containers, Codespaces).
 
 ---
 
@@ -60,7 +62,7 @@ Docker containers can't be moved this way (their ports are fixed when created): 
 
 ### Two programs on one port (IPv4 + IPv6)
 
-The OS lets one program listen on port 3000 over **IPv4** and another over **IPv6** at the same time, so neither gets "port already in use". But then `http://localhost:3000` (IPv6 is tried first) and `http://127.0.0.1:3000` open **different apps**. Port Hub marks both rows **⚠ shared**, labels them `IPv4` / `IPv6`, says which one `localhost` reaches, makes each row's ↗ link open the right address, and warns once with **Move one…** (`porthub.warnSharedPorts`). Agents get the same warning from `list_ports`.
+The OS lets one program listen on port 3000 over **IPv4** and another over **IPv6** at the same time, so neither gets "port already in use". But then `http://localhost:3000` (IPv6 is tried first) and `http://127.0.0.1:3000` open **different apps**. Port Hub marks both rows **⚠ shared**, labels them `IPv4` / `IPv6`, says which one `localhost` reaches, makes each row's ↗ link open the right address, and warns once with **Move one…** (`porthub.warnSharedPorts`).
 
 ### Watched ports
 
@@ -71,6 +73,9 @@ Click **☆** on a port (or set `porthub.watchPorts`, e.g. `[3000, 5432]`) to wa
 Ports published by Docker Desktop, OrbStack or Podman show the **container** (compose service, image, project folder) instead of `com.docker.backend`. Its button says **Stop** and runs `docker stop` on just that container (Shift+click for `docker kill`). Port Hub never kills Docker itself, since that would stop every container.
 
 ### Using it
+
+![Port Hub panel in VS Code listing listening ports with process, PID, uptime, memory, project folder and a Kill button](https://raw.githubusercontent.com/jorka/porthub/main/packages/vscode/images/screenshot.png)
+
 
 - Open the **Port Hub** tab in the bottom panel, or click the `🔌 7` item in the status bar.
 - **Hide apps & system** (on by default) hides ports held by desktop apps (Discord, Chrome, VS Code's own helpers…), OS services and editor/agent helpers like Claude Code, based on where the program is installed, not guesswork. Docker containers, and dev servers installed as apps (Postgres.app, Herd, Ollama), stay visible. On a typical Mac this takes the list from ~45 ports to ~15.
@@ -106,6 +111,25 @@ Port Hub will not let you kill VS Code itself; those rows are marked `VS Code` a
 | `porthub.warnSharedPorts` | `true` | Warn when two programs share a port (one on IPv4, one on IPv6) |
 | `porthub.detectPortConflicts` | `true` | Offer to free the port when a terminal command fails with "port in use" |
 | `porthub.showStatusBar` | `true` | Show the port count in the status bar |
+
+---
+
+## FAQ
+
+**How do I find out what is using port 3000 in VS Code?**
+Open the **Port Hub** tab in the bottom panel (or click `🔌` in the status bar) and type `:3000` in the filter. You see the process, PID, its project folder and the full command.
+
+**How do I kill the process on a port?**
+Click **Kill** on its row, or run `Port Hub: Kill Process on Port…` from the command palette and type the port number. Shift+click forces it (`SIGKILL` / `taskkill /F`).
+
+**How do I fix "EADDRINUSE: address already in use"?**
+When a command in the VS Code terminal fails with it, Port Hub offers **Kill & Run Again** (free the port and re-run your command) or **Use 3001** (run yours on a free port instead).
+
+**Does it work with Docker?**
+Yes. Ports published by Docker Desktop, OrbStack or Podman show the container and compose service, and **Stop** runs `docker stop` on that container only.
+
+**Does it work in Cursor, Windsurf or VSCodium?**
+Yes, it works in any editor based on VS Code 1.90 or newer.
 
 ---
 

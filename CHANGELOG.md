@@ -3,6 +3,11 @@
 All notable changes to Port Hub are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-11-17
+
+- Fixed: the "Kill 0 selected" button showed even when nothing was selected.
+- README: demo GIF, screenshot, FAQ; clearer Marketplace description and keywords.
+
 ## [0.1.1] - 2026-11-17
 
 - Kill/Stop buttons are quieter, with icons; the command line under the folder is smaller.
