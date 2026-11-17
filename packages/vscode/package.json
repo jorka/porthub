@@ -2,7 +2,7 @@
   "name": "porthub",
   "displayName": "Port Hub",
   "description": "See every listening port and which process (and project) holds it, right next to your terminal. Kill it in one click.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "JoroGeorgiev",
   "license": "MIT",
   "repository": {
@@ -284,7 +284,6 @@
     "mocha": "^11.7.5"
   },
   "icon": "images/icon.png",
-  "preview": true,
   "galleryBanner": {
     "color": "#1f2a44",
     "theme": "dark"

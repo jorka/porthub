@@ -3,7 +3,12 @@
 All notable changes to Port Hub are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.1.0] - Unreleased
+## [0.1.1] - 2026-11-17
+
+- Kill/Stop buttons are quieter, with icons; the command line under the folder is smaller.
+- No longer marked as Preview on the Marketplace.
+
+## [0.1.0] - 2026-11-17
 
 First public preview.
 
