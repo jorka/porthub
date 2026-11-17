@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { isInWorkspace } from './workspaceServers';
 import { optionalApi } from './optionalApi';
-import { ancestorChain, getParentMap, getProtectedPids, isAppOrSystem, listPorts, parseRange, probeHttp, shouldProbeHttp, type PortEntry } from '@killport/core';
+import { ancestorChain, getParentMap, getProtectedPids, isAppOrSystem, listPorts, parseRange, probeHttp, shouldProbeHttp, type PortEntry } from '@porthub/core';
 
 export interface Snapshot {
   entries: PortEntry[];
@@ -87,7 +87,7 @@ export class PortStore implements vscode.Disposable {
   }
 
   private async doRefresh(): Promise<void> {
-    const cfg = vscode.workspace.getConfiguration('killport');
+    const cfg = vscode.workspace.getConfiguration('porthub');
     this.loading = true;
     this.emitter.fire(this.snapshot);
     try {
@@ -192,7 +192,7 @@ export class PortStore implements vscode.Disposable {
   restartTimer(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;
-    const seconds = vscode.workspace.getConfiguration('killport').get<number>('autoRefreshInterval', 5);
+    const seconds = vscode.workspace.getConfiguration('porthub').get<number>('autoRefreshInterval', 5);
     if (this.paused || !seconds || seconds <= 0) return;
     this.timer = setInterval(() => {
       if (vscode.window.state.focused) void this.refresh();
@@ -222,7 +222,7 @@ export function remoteHostLabel(): string | undefined {
 
 /** The panel's view switches. "This workspace" does nothing when no folder is open. */
 export function viewFilters(): { hideApps: boolean; workspaceOnly: boolean; hasWorkspace: boolean } {
-  const cfg = vscode.workspace.getConfiguration('killport');
+  const cfg = vscode.workspace.getConfiguration('porthub');
   const hasWorkspace = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
   return {
     hideApps: cfg.get<boolean>('hideAppsAndSystem', true),

@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 
-/** Your own names for ports, from the `killport.portLabels` setting: { "3000": "rezicard front" }. */
+/** Your own names for ports, from the `porthub.portLabels` setting: { "3000": "rezicard front" }. */
 export function getPortLabels(): Record<string, string> {
-  const raw = vscode.workspace.getConfiguration('killport').get<Record<string, unknown>>('portLabels', {});
+  const raw = vscode.workspace.getConfiguration('porthub').get<Record<string, unknown>>('portLabels', {});
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw ?? {})) if (/^\d+$/.test(k) && typeof v === 'string' && v.trim()) out[k] = v.trim();
   return out;
@@ -28,5 +28,5 @@ export async function editPortLabel(port?: number): Promise<void> {
   if (value === undefined) return;
   if (value.trim()) labels[port] = value.trim();
   else delete labels[port];
-  await vscode.workspace.getConfiguration('killport').update('portLabels', labels, vscode.ConfigurationTarget.Global);
+  await vscode.workspace.getConfiguration('porthub').update('portLabels', labels, vscode.ConfigurationTarget.Global);
 }

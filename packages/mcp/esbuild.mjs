@@ -3,7 +3,7 @@ import { chmodSync, copyFileSync, readFileSync } from 'node:fs';
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 
-// Everything (core, MCP SDK, zod) is bundled so `npx killport-mcp` has no runtime deps.
+// Everything (core, MCP SDK, zod) is bundled so `npx porthub-mcp` has no runtime deps.
 await build({
   entryPoints: ['src/server.ts'],
   outfile: 'dist/server.js',
@@ -12,7 +12,7 @@ await build({
   target: 'node18',
   format: 'cjs',
   banner: { js: '#!/usr/bin/env node' },
-  define: { __KILLPORT_VERSION__: JSON.stringify(pkg.version) },
+  define: { __PORTHUB_VERSION__: JSON.stringify(pkg.version) },
   minify: process.argv.includes('--minify'),
   logLevel: 'info',
 });

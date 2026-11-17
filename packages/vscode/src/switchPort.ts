@@ -12,7 +12,7 @@ import {
   type PortEntry,
   type PortRewrite,
   type ShellKind,
-} from '@killport/core';
+} from '@porthub/core';
 import { entryLabel } from './kill';
 import { getPortLabels } from './labels';
 import type { PortStore } from './store';
@@ -192,7 +192,7 @@ export async function switchPort(store: PortStore, port?: number, newPort?: numb
 }
 
 async function moveSettings(from: number, to: number): Promise<void> {
-  const cfg = vscode.workspace.getConfiguration('killport');
+  const cfg = vscode.workspace.getConfiguration('porthub');
   const labels = getPortLabels();
   if (labels[from] && !labels[to]) {
     labels[to] = labels[from];

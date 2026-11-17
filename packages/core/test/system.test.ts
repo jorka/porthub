@@ -42,7 +42,7 @@ const exited = (c: ChildProcess) => new Promise<void>((r) => (c.exitCode !== nul
 
 describe(`system (${process.platform})`, () => {
   it('finds a real listening process with its details', async () => {
-    const cwd = realpathSync(mkdtempSync(join(tmpdir(), 'killport-sys-')));
+    const cwd = realpathSync(mkdtempSync(join(tmpdir(), 'porthub-sys-')));
     const port = await freePort();
     const child = await startServer(port, cwd);
 

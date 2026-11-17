@@ -1,24 +1,24 @@
 import * as vscode from 'vscode';
-import { listPorts, stopEntry, type PortEntry } from '@killport/core';
+import { listPorts, stopEntry, type PortEntry } from '@porthub/core';
 import { entryLabel } from './kill';
 import { getPortLabels } from './labels';
 import type { PortStore } from './store';
 
 /**
- * `killport` task type: frees ports before something else starts. Typical use is as a
+ * `porthub` task type: frees ports before something else starts. Typical use is as a
  * preLaunchTask, so F5 never fails with "port already in use":
  *
- *   tasks.json:   { "label": "Free port 3000", "type": "killport", "ports": [3000] }
+ *   tasks.json:   { "label": "Free port 3000", "type": "porthub", "ports": [3000] }
  *   launch.json:  "preLaunchTask": "Free port 3000"
  */
-export interface KillportTaskDefinition extends vscode.TaskDefinition {
-  type: 'killport';
+export interface PortHubTaskDefinition extends vscode.TaskDefinition {
+  type: 'porthub';
   ports: number[];
   /** Kill hard if a process ignores the graceful stop. Default true: a task can't ask. */
   force?: boolean;
 }
 
-export const TASK_TYPE = 'killport';
+export const TASK_TYPE = 'porthub';
 
 export function registerTasks(ctx: vscode.ExtensionContext, store: PortStore): void {
   ctx.subscriptions.push(
@@ -29,7 +29,7 @@ export function registerTasks(ctx: vscode.ExtensionContext, store: PortStore): v
           createTask({ type: TASK_TYPE, ports: [Number(port)] }, vscode.TaskScope.Workspace, `Free port ${port} (${label})`, store),
         ),
       resolveTask: (task) => {
-        const def = task.definition as KillportTaskDefinition;
+        const def = task.definition as PortHubTaskDefinition;
         if (!Array.isArray(def.ports)) return undefined;
         return createTask(def, task.scope ?? vscode.TaskScope.Workspace, task.name, store);
       },
@@ -37,8 +37,8 @@ export function registerTasks(ctx: vscode.ExtensionContext, store: PortStore): v
   );
 }
 
-function createTask(def: KillportTaskDefinition, scope: vscode.TaskScope | vscode.WorkspaceFolder, name: string, store: PortStore): vscode.Task {
-  const task = new vscode.Task(def, scope, name, 'killport', new vscode.CustomExecution(async () => new FreePortsTerminal(def, store)));
+function createTask(def: PortHubTaskDefinition, scope: vscode.TaskScope | vscode.WorkspaceFolder, name: string, store: PortStore): vscode.Task {
+  const task = new vscode.Task(def, scope, name, 'porthub', new vscode.CustomExecution(async () => new FreePortsTerminal(def, store)));
   task.presentationOptions = { reveal: vscode.TaskRevealKind.Silent, clear: true };
   return task;
 }
@@ -51,7 +51,7 @@ class FreePortsTerminal implements vscode.Pseudoterminal {
   readonly onDidClose = this.closeEmitter.event;
 
   constructor(
-    private readonly def: KillportTaskDefinition,
+    private readonly def: PortHubTaskDefinition,
     private readonly store: PortStore,
   ) {}
 
@@ -59,7 +59,7 @@ class FreePortsTerminal implements vscode.Pseudoterminal {
     void this.run().then(
       (code) => this.closeEmitter.fire(code),
       (err) => {
-        this.line(`\x1b[31mKillport failed: ${(err as Error).message}\x1b[0m`);
+        this.line(`\x1b[31mPort Hub failed: ${(err as Error).message}\x1b[0m`);
         this.closeEmitter.fire(1);
       },
     );

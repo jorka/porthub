@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { findSharedPorts, type PortEntry } from '@killport/core';
+import { findSharedPorts, type PortEntry } from '@porthub/core';
 import { getPortLabels } from './labels';
 import type { PortStore } from './store';
 
@@ -22,7 +22,7 @@ export function registerSharedPortWarning(
   ctx.subscriptions.push(
     store.onDidChange((s) => {
       if (s.loading || s.error) return;
-      if (!vscode.workspace.getConfiguration('killport').get<boolean>('warnSharedPorts', true)) return;
+      if (!vscode.workspace.getConfiguration('porthub').get<boolean>('warnSharedPorts', true)) return;
       for (const shared of findSharedPorts(store.allEntries)) {
         const key = `${shared.port}|${[...shared.ipv4, ...shared.ipv6].map((e) => e.pid).sort().join(',')}`;
         if (warned.has(key)) continue;

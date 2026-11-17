@@ -39,7 +39,7 @@ export function probeHost(addresses: string[]): string | undefined {
 function tryRequest(mod: typeof http | typeof https, host: string, port: number, timeoutMs: number): Promise<boolean> {
   return new Promise((resolve) => {
     const req = mod.request(
-      { host, port, method: 'HEAD', path: '/', timeout: timeoutMs, headers: { 'User-Agent': 'killport-probe' }, rejectUnauthorized: false },
+      { host, port, method: 'HEAD', path: '/', timeout: timeoutMs, headers: { 'User-Agent': 'porthub-probe' }, rejectUnauthorized: false },
       (res) => {
         res.resume();
         resolve(true); // any HTTP status (200, 404, 302...) means it speaks HTTP

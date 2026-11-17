@@ -1,4 +1,4 @@
-// Launches a separate VS Code instance (own profile, other extensions disabled) with Killport loaded
+// Launches a separate VS Code instance (own profile, other extensions disabled) with Port Hub loaded
 // and runs test/suite. Uses $VSCODE_EXECUTABLE_PATH if set, otherwise downloads VS Code
 // ($VSCODE_TEST_VERSION, default "stable"; CI also runs the oldest supported version).
 import { runTests } from '@vscode/test-electron';
@@ -16,10 +16,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 for (const key of Object.keys(process.env)) {
   if (key === 'ELECTRON_RUN_AS_NODE' || (key.startsWith('VSCODE_') && key !== 'VSCODE_EXECUTABLE_PATH' && key !== 'VSCODE_TEST_VERSION')) delete process.env[key];
 }
-const tmp = mkdtempSync(join(tmpdir(), 'killport-it-'));
+const tmp = mkdtempSync(join(tmpdir(), 'porthub-it-'));
 const workspace = join(tmp, 'workspace');
 mkdirSync(workspace);
-writeFileSync(join(workspace, 'package.json'), '{"name":"killport-test-workspace"}');
+writeFileSync(join(workspace, 'package.json'), '{"name":"porthub-test-workspace"}');
 
 // A tasks.json exactly like a user would write, freeing a port chosen now.
 const taskPort = await new Promise((r) => {
@@ -31,7 +31,7 @@ const taskPort = await new Promise((r) => {
 mkdirSync(join(workspace, '.vscode'));
 writeFileSync(
   join(workspace, '.vscode', 'tasks.json'),
-  JSON.stringify({ version: '2.0.0', tasks: [{ label: 'Free test port', type: 'killport', ports: [taskPort] }] }, null, 2),
+  JSON.stringify({ version: '2.0.0', tasks: [{ label: 'Free test port', type: 'porthub', ports: [taskPort] }] }, null, 2),
 );
 
 try {
@@ -41,7 +41,7 @@ try {
     vscodeExecutablePath: process.env.VSCODE_EXECUTABLE_PATH || undefined,
     version: process.env.VSCODE_TEST_VERSION || 'stable',
     launchArgs: [workspace, '--disable-extensions', `--user-data-dir=${join(tmp, 'user-data')}`, '--skip-welcome', '--skip-release-notes', '--disable-workspace-trust'],
-    extensionTestsEnv: { KILLPORT_TEST_WORKSPACE: workspace, KILLPORT_TEST_TASK_PORT: String(taskPort) },
+    extensionTestsEnv: { PORTHUB_TEST_WORKSPACE: workspace, PORTHUB_TEST_TASK_PORT: String(taskPort) },
   });
 } catch (err) {
   console.error('Integration tests failed:', err);

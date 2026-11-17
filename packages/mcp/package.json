@@ -1,5 +1,5 @@
 {
-  "name": "killport-mcp",
+  "name": "porthub-mcp",
   "version": "0.1.0",
   "description": "MCP server that lets AI agents (Claude Code, Codex, Cursor, Gemini CLI, Copilot...) list listening ports and kill the process holding one.",
   "license": "MIT",
@@ -13,7 +13,7 @@
   },
   "homepage": "https://github.com/jorka/killport#readme",
   "bin": {
-    "killport-mcp": "dist/server.js"
+    "porthub-mcp": "dist/server.js"
   },
   "files": [
     "dist",
@@ -42,7 +42,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@killport/core": "0.1.0",
+    "@porthub/core": "0.1.0",
     "@modelcontextprotocol/sdk": "^1.32.0",
     "zod": "^4.0.0"
   }

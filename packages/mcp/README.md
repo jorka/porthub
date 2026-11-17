@@ -1,4 +1,4 @@
-# killport-mcp
+# porthub-mcp
 
 An [MCP](https://modelcontextprotocol.io) server that lets AI coding agents see which process is holding a port, and free it.
 
@@ -28,15 +28,15 @@ Works on **macOS, Linux and Windows**. No configuration, no network access, no t
 **Claude Code**
 
 ```sh
-claude mcp add killport -- npx -y killport-mcp
+claude mcp add porthub -- npx -y porthub-mcp
 ```
 
 **Codex CLI** (`~/.codex/config.toml`)
 
 ```toml
-[mcp_servers.killport]
+[mcp_servers.porthub]
 command = "npx"
-args = ["-y", "killport-mcp"]
+args = ["-y", "porthub-mcp"]
 ```
 
 **Cursor, Windsurf, Gemini CLI, Claude Desktop and others**
@@ -44,12 +44,12 @@ args = ["-y", "killport-mcp"]
 ```json
 {
   "mcpServers": {
-    "killport": { "command": "npx", "args": ["-y", "killport-mcp"] }
+    "porthub": { "command": "npx", "args": ["-y", "porthub-mcp"] }
   }
 }
 ```
 
-**VS Code / GitHub Copilot**: install the [Killport extension](https://marketplace.visualstudio.com/items?itemName=JoroGeorgiev.killport); it registers this server automatically (VS Code 1.101+), along with a panel that shows the same information.
+**VS Code / GitHub Copilot**: install the [Port Hub extension](https://marketplace.visualstudio.com/items?itemName=JoroGeorgiev.porthub); it registers this server automatically (VS Code 1.101+), along with a panel that shows the same information.
 
 Requires Node.js 18 or newer.
 

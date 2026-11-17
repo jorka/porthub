@@ -1,10 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { findFreePort, findSharedPorts, getProtectedPids, isAppOrSystem, isLocalhostOnly, killPort, listPorts, probeHttp, shouldProbeHttp, waitForPort, type PortEntry } from '@killport/core';
+import { findFreePort, findSharedPorts, getProtectedPids, isAppOrSystem, isLocalhostOnly, killPort, listPorts, probeHttp, shouldProbeHttp, waitForPort, type PortEntry } from '@porthub/core';
 
-declare const __KILLPORT_VERSION__: string;
-const VERSION = typeof __KILLPORT_VERSION__ === 'string' ? __KILLPORT_VERSION__ : '0.0.0-dev';
+declare const __PORTHUB_VERSION__: string;
+const VERSION = typeof __PORTHUB_VERSION__ === 'string' ? __PORTHUB_VERSION__ : '0.0.0-dev';
 
 function describe(e: PortEntry): string {
   const where = e.cwd ? ` in ${e.cwd}` : '';
@@ -24,7 +24,7 @@ function text(t: string, isError = false) {
   return { content: [{ type: 'text' as const, text: t }], isError };
 }
 
-const server = new McpServer({ name: 'killport', version: VERSION });
+const server = new McpServer({ name: 'porthub', version: VERSION });
 
 server.registerTool(
   'list_ports',
@@ -193,6 +193,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('killport-mcp failed to start:', err);
+  console.error('porthub-mcp failed to start:', err);
   process.exit(1);
 });

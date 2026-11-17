@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { PortEntry } from '@killport/core';
+import type { PortEntry } from '@porthub/core';
 import { PortStore, remoteHostLabel } from './store';
 import { optionalApi } from './optionalApi';
 import { PortsViewProvider, openInBrowser } from './PortsViewProvider';
@@ -14,8 +14,8 @@ import { registerSharedPortWarning } from './sharedWarning';
 
 let activeStore: PortStore | undefined;
 
-/** Public API returned from activate(): `vscode.extensions.getExtension('<publisher>.killport').exports`. */
-export interface KillportApi {
+/** Public API returned from activate(): `vscode.extensions.getExtension('<publisher>.porthub').exports`. */
+export interface PortHubApi {
   /** Fires when a terminal command fails (or moves) because its port is taken. */
   onDidDetectPortConflict: vscode.Event<DetectedConflict>;
   /** The latest list of listening ports (after the last refresh). */
@@ -24,11 +24,11 @@ export interface KillportApi {
   getVisiblePorts(): PortEntry[];
   /** Re-scans the ports now. */
   refresh(): Promise<void>;
-  /** Fires when a watched port (killport.watchPorts) starts or stops listening. */
+  /** Fires when a watched port (porthub.watchPorts) starts or stops listening. */
   onDidChangeWatchedPort: vscode.Event<WatchedPortChange>;
 }
 
-export function activate(ctx: vscode.ExtensionContext): KillportApi {
+export function activate(ctx: vscode.ExtensionContext): PortHubApi {
   const store = new PortStore();
   activeStore = store;
   ctx.subscriptions.push(store);
@@ -45,10 +45,10 @@ export function activate(ctx: vscode.ExtensionContext): KillportApi {
 
   // Status bar: "$(plug) 7 ports"
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  status.command = 'killport.show';
+  status.command = 'porthub.show';
   ctx.subscriptions.push(status);
   const updateStatus = () => {
-    if (!vscode.workspace.getConfiguration('killport').get<boolean>('showStatusBar', true)) {
+    if (!vscode.workspace.getConfiguration('porthub').get<boolean>('showStatusBar', true)) {
       status.hide();
       return;
     }
@@ -69,25 +69,25 @@ export function activate(ctx: vscode.ExtensionContext): KillportApi {
   ctx.subscriptions.push(store.onDidChange(updateStatus));
 
   ctx.subscriptions.push(
-    vscode.commands.registerCommand('killport.refresh', () => store.refresh()),
-    vscode.commands.registerCommand('killport.show', () => vscode.commands.executeCommand(`${PortsViewProvider.viewId}.focus`)),
-    vscode.commands.registerCommand('killport.killPort', (port?: number) => pickAndKill(store, port)),
-    vscode.commands.registerCommand('killport.openInBrowser', (port?: number) => (typeof port === 'number' ? openInBrowser(port, store.snapshot.entries.find((e) => e.port === port)?.http ?? 'http') : undefined)),
-    vscode.commands.registerCommand('killport.switchPort', (port?: number, newPort?: number, opts?: SwitchPortOptions) => switchPort(store, port, newPort, opts)),
-    vscode.commands.registerCommand('killport.toggleWatch', (port?: number) => (typeof port === 'number' ? toggleWatchedPort(port) : undefined)),
-    vscode.commands.registerCommand('killport.stopWorkspaceServers', () => stopWorkspaceServers(store)),
-    vscode.commands.registerCommand('killport.editLabel', (port?: number) => editPortLabel(port)),
-    vscode.commands.registerCommand('killport.openSettings', () =>
+    vscode.commands.registerCommand('porthub.refresh', () => store.refresh()),
+    vscode.commands.registerCommand('porthub.show', () => vscode.commands.executeCommand(`${PortsViewProvider.viewId}.focus`)),
+    vscode.commands.registerCommand('porthub.killPort', (port?: number) => pickAndKill(store, port)),
+    vscode.commands.registerCommand('porthub.openInBrowser', (port?: number) => (typeof port === 'number' ? openInBrowser(port, store.snapshot.entries.find((e) => e.port === port)?.http ?? 'http') : undefined)),
+    vscode.commands.registerCommand('porthub.switchPort', (port?: number, newPort?: number, opts?: SwitchPortOptions) => switchPort(store, port, newPort, opts)),
+    vscode.commands.registerCommand('porthub.toggleWatch', (port?: number) => (typeof port === 'number' ? toggleWatchedPort(port) : undefined)),
+    vscode.commands.registerCommand('porthub.stopWorkspaceServers', () => stopWorkspaceServers(store)),
+    vscode.commands.registerCommand('porthub.editLabel', (port?: number) => editPortLabel(port)),
+    vscode.commands.registerCommand('porthub.openSettings', () =>
       vscode.commands.executeCommand('workbench.action.openSettings', `@ext:${ctx.extension.id}`),
     ),
-    vscode.commands.registerCommand('killport.toggleHideApps', () => toggleSetting('hideAppsAndSystem', true)),
-    vscode.commands.registerCommand('killport.toggleWorkspaceOnly', () => toggleSetting('workspaceOnly', false)),
+    vscode.commands.registerCommand('porthub.toggleHideApps', () => toggleSetting('hideAppsAndSystem', true)),
+    vscode.commands.registerCommand('porthub.toggleWorkspaceOnly', () => toggleSetting('workspaceOnly', false)),
   );
 
   ctx.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (!e.affectsConfiguration('killport')) return;
-      if (e.affectsConfiguration('killport.watchPorts')) watcher.resetBaseline();
+      if (!e.affectsConfiguration('porthub')) return;
+      if (e.affectsConfiguration('porthub.watchPorts')) watcher.resetBaseline();
       store.restartTimer();
       updateStatus();
       void store.refresh();
@@ -111,7 +111,7 @@ export function activate(ctx: vscode.ExtensionContext): KillportApi {
 }
 
 function toggleSetting(key: string, defaultValue: boolean): Thenable<void> {
-  const cfg = vscode.workspace.getConfiguration('killport');
+  const cfg = vscode.workspace.getConfiguration('porthub');
   return cfg.update(key, !cfg.get<boolean>(key, defaultValue), vscode.ConfigurationTarget.Global);
 }
 
@@ -177,15 +177,15 @@ function registerMcpServer(ctx: vscode.ExtensionContext): void {
   const version = String(ctx.extension.packageJSON.version ?? '0.0.0');
   try {
     ctx.subscriptions.push(
-      register.call(api.lm, 'killport.mcp', {
+      register.call(api.lm, 'porthub.mcp', {
         provideMcpServerDefinitions: () => [
           // Run the server with VS Code's bundled Node runtime so users don't need Node installed.
-          new Definition('Killport', process.execPath, [serverPath], { ELECTRON_RUN_AS_NODE: '1' }, version),
+          new Definition('Port Hub', process.execPath, [serverPath], { ELECTRON_RUN_AS_NODE: '1' }, version),
         ],
       }),
     );
   } catch (err) {
-    console.warn('[killport] MCP server registration failed:', err);
+    console.warn('[porthub] MCP server registration failed:', err);
   }
 }
 

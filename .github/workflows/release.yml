@@ -3,7 +3,7 @@ name: Release
 # Push a tag like v0.1.0 to publish. Each store is skipped when its token secret is not set:
 #   VSCE_PAT  - VS Code Marketplace (https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
 #   OVSX_PAT  - Open VSX, used by Cursor, Windsurf, VSCodium (https://open-vsx.org)
-#   NPM_TOKEN - npm, for `npx killport-mcp`
+#   NPM_TOKEN - npm, for `npx porthub-mcp`
 on:
   push:
     tags: ['v*']
@@ -44,9 +44,9 @@ jobs:
         if: env.OVSX_PAT != ''
         working-directory: packages/vscode
         run: npx ovsx publish *.vsix --pat "$OVSX_PAT"
-      - name: Publish killport-mcp to npm
+      - name: Publish porthub-mcp to npm
         if: env.NODE_AUTH_TOKEN != ''
-        run: npm publish -w killport-mcp --access public --provenance
+        run: npm publish -w porthub-mcp --access public --provenance
 
       - name: GitHub release with the .vsix
         uses: softprops/action-gh-release@v2

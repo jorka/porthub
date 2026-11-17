@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { optionalEvent } from './optionalApi';
 import { homedir } from 'node:os';
-import { findFreePort, listPorts, parsePortConflict, portFromCommand, rewriteCommandForPort, type PortConflict, type PortEntry } from '@killport/core';
+import { findFreePort, listPorts, parsePortConflict, portFromCommand, rewriteCommandForPort, type PortConflict, type PortEntry } from '@porthub/core';
 import { entryLabel, killEntry } from './kill';
 import { shellKindOf } from './switchPort';
 import type { PortStore } from './store';
@@ -82,7 +82,7 @@ export function registerTerminalWatch(
       execution: e.execution,
       info: { commandLine: e.execution.commandLine.value.trim(), confident: e.execution.commandLine.confidence === HIGH_CONFIDENCE, ended: endPromise },
     });
-    if (!vscode.workspace.getConfiguration('killport').get<boolean>('detectPortConflicts', true)) return;
+    if (!vscode.workspace.getConfiguration('porthub').get<boolean>('detectPortConflicts', true)) return;
     void scan(e);
   });
   if (!endSub || !startSub) {

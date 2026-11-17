@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { RUNTIME_REFUSAL, stopEntry, type PortEntry } from '@killport/core';
+import { RUNTIME_REFUSAL, stopEntry, type PortEntry } from '@porthub/core';
 import type { PortStore } from './store';
 
 export function entryLabel(e: PortEntry): string {
@@ -36,7 +36,7 @@ export async function killEntry(store: PortStore, entry: PortEntry, opts: KillEn
     return false;
   }
 
-  if (!opts.skipConfirm && vscode.workspace.getConfiguration('killport').get<boolean>('confirmBeforeKill', true)) {
+  if (!opts.skipConfirm && vscode.workspace.getConfiguration('porthub').get<boolean>('confirmBeforeKill', true)) {
     const c = entry.container;
     const detail = c
       ? [`Image: ${c.image}`, c.composeProject && `Compose: ${c.composeProject} / ${c.composeService ?? '?'}`, `Runs: docker ${force ? 'kill' : 'stop'} ${c.id}`].filter(Boolean).join('\n')
@@ -81,7 +81,7 @@ export async function killMany(store: PortStore, entries: PortEntry[], force = f
     return;
   }
 
-  if (!skipConfirm && vscode.workspace.getConfiguration('killport').get<boolean>('confirmBeforeKill', true)) {
+  if (!skipConfirm && vscode.workspace.getConfiguration('porthub').get<boolean>('confirmBeforeKill', true)) {
     const lines = targets.map((e) => `:${e.port}  ${entryLabel(e).replace(/ on port \d+$/, '')}`);
     if (skipped) lines.push('', `${skipped} protected port${skipped === 1 ? '' : 's'} will be skipped.`);
     const choice = await vscode.window.showWarningMessage(

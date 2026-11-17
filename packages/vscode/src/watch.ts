@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { probeHttp, shouldProbeHttp } from '@killport/core';
+import { probeHttp, shouldProbeHttp } from '@porthub/core';
 import { getPortLabels } from './labels';
 import type { PortStore } from './store';
 
@@ -9,18 +9,18 @@ export interface WatchedPortChange {
 }
 
 export function getWatchedPorts(): number[] {
-  const raw = vscode.workspace.getConfiguration('killport').get<unknown[]>('watchPorts', []);
+  const raw = vscode.workspace.getConfiguration('porthub').get<unknown[]>('watchPorts', []);
   return [...new Set((Array.isArray(raw) ? raw : []).map(Number).filter((p) => Number.isInteger(p) && p > 0 && p <= 65535))];
 }
 
 export async function toggleWatchedPort(port: number): Promise<void> {
   const ports = getWatchedPorts();
   const next = ports.includes(port) ? ports.filter((p) => p !== port) : [...ports, port].sort((a, b) => a - b);
-  await vscode.workspace.getConfiguration('killport').update('watchPorts', next, vscode.ConfigurationTarget.Global);
+  await vscode.workspace.getConfiguration('porthub').update('watchPorts', next, vscode.ConfigurationTarget.Global);
 }
 
 /**
- * Tracks the watched ports (killport.watchPorts) across refreshes: which are down, and
+ * Tracks the watched ports (porthub.watchPorts) across refreshes: which are down, and
  * notifications when one stops or starts listening.
  */
 export class PortWatcher implements vscode.Disposable {
@@ -68,7 +68,7 @@ export class PortWatcher implements vscode.Disposable {
       const is = now.has(port);
       if (was === is) continue;
       this.emitter.fire({ port, listening: is });
-      if (vscode.workspace.getConfiguration('killport').get<boolean>('notifyWatchedPorts', true)) void this.notify(port, is);
+      if (vscode.workspace.getConfiguration('porthub').get<boolean>('notifyWatchedPorts', true)) void this.notify(port, is);
     }
   }
 

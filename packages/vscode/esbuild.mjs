@@ -10,7 +10,7 @@ const common = { bundle: true, platform: 'node', target: 'node18', format: 'cjs'
 const configs = [
   { ...common, entryPoints: ['src/extension.ts'], outfile: 'dist/extension.js', external: ['vscode'] },
   // Same server as the npm package, shipped inside the extension so VS Code / Copilot can launch it.
-  { ...common, entryPoints: ['../mcp/src/server.ts'], outfile: 'dist/mcp-server.js', define: { __KILLPORT_VERSION__: JSON.stringify(mcpVersion) } },
+  { ...common, entryPoints: ['../mcp/src/server.ts'], outfile: 'dist/mcp-server.js', define: { __PORTHUB_VERSION__: JSON.stringify(mcpVersion) } },
 ];
 
 if (watch) {

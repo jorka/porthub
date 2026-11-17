@@ -5,7 +5,7 @@ const net = require('node:net');
 const path = require('node:path');
 const vscode = require('vscode');
 
-const EXT_ID = 'JoroGeorgiev.killport';
+const EXT_ID = 'JoroGeorgiev.porthub';
 // Windows CI is slow (each port scan runs netstat/tasklist/PowerShell): give tests more time there.
 const SLOW = process.platform === 'win32' ? 3 : 1;
 // The extension host runs on Electron; this env makes the same binary behave like plain node.
@@ -60,7 +60,7 @@ function isPortFree(port) {
  */
 function startServer(port, cwd) {
   const fs = require('node:fs');
-  const file = path.join(cwd, 'killport-test-server.js');
+  const file = path.join(cwd, 'porthub-test-server.js');
   fs.writeFileSync(file, `require('http').createServer((q, s) => s.end('ok')).listen(Number(process.argv[2]), '127.0.0.1', () => console.log('ready'))`);
   const child = spawn(process.execPath, [file, String(port)], {
     cwd,
@@ -76,7 +76,7 @@ function startServer(port, cwd) {
 
 const exited = (child) => new Promise((r) => (child.exitCode !== null || child.signalCode !== null ? r() : child.once('exit', () => r())));
 
-describe('Killport extension', function () {
+describe('Port Hub extension', function () {
   /** @type {import('vscode').Extension<any>} */
   let ext;
   const children = [];
@@ -86,7 +86,7 @@ describe('Killport extension', function () {
     assert.ok(ext, `extension ${EXT_ID} not found`);
     await ext.activate();
     // Killing from tests must not open modal dialogs.
-    await vscode.workspace.getConfiguration('killport').update('confirmBeforeKill', false, vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('porthub').update('confirmBeforeKill', false, vscode.ConfigurationTarget.Global);
   });
 
   after(() => {
@@ -96,23 +96,23 @@ describe('Killport extension', function () {
   it('activates and registers its commands', async () => {
     assert.strictEqual(ext.isActive, true);
     const commands = await vscode.commands.getCommands(true);
-    for (const id of ['killport.refresh', 'killport.killPort', 'killport.show', 'killport.openSettings', 'killport.editLabel', 'killport.toggleHideApps', 'killport.toggleWorkspaceOnly']) {
+    for (const id of ['porthub.refresh', 'porthub.killPort', 'porthub.show', 'porthub.openSettings', 'porthub.editLabel', 'porthub.toggleHideApps', 'porthub.toggleWorkspaceOnly']) {
       assert.ok(commands.includes(id), `missing command ${id}`);
     }
   });
 
   it('opens the panel', async () => {
-    await vscode.commands.executeCommand('killport.show');
-    await vscode.commands.executeCommand('killport.refresh');
+    await vscode.commands.executeCommand('porthub.show');
+    await vscode.commands.executeCommand('porthub.refresh');
   });
 
   it('kills the process listening on a port', async () => {
     const port = await freePort();
-    const child = await startServer(port, process.env.KILLPORT_TEST_WORKSPACE);
+    const child = await startServer(port, process.env.PORTHUB_TEST_WORKSPACE);
     children.push(child);
     assert.strictEqual(await isPortFree(port), false, 'test server should hold the port');
 
-    await vscode.commands.executeCommand('killport.killPort', port);
+    await vscode.commands.executeCommand('porthub.killPort', port);
 
     await Promise.race([exited(child), sleep(5000).then(() => assert.fail('process was not killed'))]);
     await waitFor(() => isPortFree(port), 5000, `port ${port} to be free`);
@@ -124,7 +124,7 @@ describe('Killport extension', function () {
     const server = net.createServer();
     await new Promise((r) => server.listen(port, '127.0.0.1', r));
     try {
-      await vscode.commands.executeCommand('killport.killPort', port);
+      await vscode.commands.executeCommand('porthub.killPort', port);
       await sleep(500);
       assert.strictEqual(server.listening, true, 'the extension host server must still be listening');
     } finally {
@@ -160,15 +160,15 @@ describe('Killport extension', function () {
   it('stops only the servers started from this workspace', async () => {
     const fs = require('node:fs');
     const os = require('node:os');
-    const inside = path.join(process.env.KILLPORT_TEST_WORKSPACE, 'apps', 'web');
+    const inside = path.join(process.env.PORTHUB_TEST_WORKSPACE, 'apps', 'web');
     fs.mkdirSync(inside, { recursive: true });
-    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'killport-outside-'));
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'porthub-outside-'));
     const [p1, p2] = [await freePort(), await freePort()];
     const mine = await startServer(p1, inside);
     const other = await startServer(p2, outside);
     children.push(mine, other);
 
-    await vscode.commands.executeCommand('killport.stopWorkspaceServers');
+    await vscode.commands.executeCommand('porthub.stopWorkspaceServers');
 
     await Promise.race([exited(mine), sleep(5000).then(() => assert.fail('workspace server was not stopped'))]);
     await sleep(300);
@@ -178,7 +178,7 @@ describe('Killport extension', function () {
 
   it('detects web servers so their port opens in the browser', async () => {
     const port = await freePort();
-    const child = await startServer(port, process.env.KILLPORT_TEST_WORKSPACE);
+    const child = await startServer(port, process.env.PORTHUB_TEST_WORKSPACE);
     children.push(child);
     await waitFor(async () => {
       await ext.exports.refresh();
@@ -190,7 +190,7 @@ describe('Killport extension', function () {
   it('knows which VS Code terminal started a server', async function () {
     this.timeout(30000 * SLOW);
     const port = await freePort();
-    const terminal = vscode.window.createTerminal({ name: 'dev-server', cwd: process.env.KILLPORT_TEST_WORKSPACE, ...(process.platform === 'win32' ? {} : { shellPath: '/bin/bash' }) });
+    const terminal = vscode.window.createTerminal({ name: 'dev-server', cwd: process.env.PORTHUB_TEST_WORKSPACE, ...(process.platform === 'win32' ? {} : { shellPath: '/bin/bash' }) });
     try {
       const script = `require('http').createServer((q, s) => s.end('ok')).listen(${port}, '127.0.0.1')`;
       terminal.sendText(
@@ -211,7 +211,7 @@ describe('Killport extension', function () {
 
   it('reports when a watched port starts and stops listening', async function () {
     this.timeout(30000 * SLOW);
-    const cfg = () => vscode.workspace.getConfiguration('killport');
+    const cfg = () => vscode.workspace.getConfiguration('porthub');
     await cfg().update('notifyWatchedPorts', false, vscode.ConfigurationTarget.Global);
     const port = await freePort();
     await cfg().update('watchPorts', [port], vscode.ConfigurationTarget.Global);
@@ -229,7 +229,7 @@ describe('Killport extension', function () {
 
     try {
       const up = next(true);
-      const child = await startServer(port, process.env.KILLPORT_TEST_WORKSPACE);
+      const child = await startServer(port, process.env.PORTHUB_TEST_WORKSPACE);
       children.push(child);
       await ext.exports.refresh();
       await Promise.race([up, sleep(5000).then(() => assert.fail('no "listening" event'))]);
@@ -252,13 +252,13 @@ const port = Number(i > 0 ? process.argv[i + 1] : process.env.PORT || 3000);
 require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
     const node = (args) => (process.platform === 'win32' ? `$env:ELECTRON_RUN_AS_NODE=1; & "${process.execPath}" ${args}` : `ELECTRON_RUN_AS_NODE=1 "${process.execPath}" ${args}`);
 
-    before(() => fs.writeFileSync(path.join(process.env.KILLPORT_TEST_WORKSPACE, 'server.js'), serverJs));
+    before(() => fs.writeFileSync(path.join(process.env.PORTHUB_TEST_WORKSPACE, 'server.js'), serverJs));
 
     it('restarts a server running in a VS Code terminal on the new port, in the same terminal', async function () {
       if (!hasShellApis()) this.skip(); // VS Code < 1.93
       this.timeout(60000 * SLOW);
       const [from, to] = [await freePort(), await freePort()];
-      const terminal = vscode.window.createTerminal({ name: 'app', cwd: process.env.KILLPORT_TEST_WORKSPACE, ...(process.platform === 'win32' ? {} : { shellPath: '/bin/bash' }) });
+      const terminal = vscode.window.createTerminal({ name: 'app', cwd: process.env.PORTHUB_TEST_WORKSPACE, ...(process.platform === 'win32' ? {} : { shellPath: '/bin/bash' }) });
       try {
         const integration = await new Promise((resolve) => {
           if (terminal.shellIntegration) return resolve(terminal.shellIntegration);
@@ -270,7 +270,7 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
         integration.executeCommand(started);
         await waitFor(async () => !(await isPortFree(from)), 15000 * SLOW, 'server to listen');
 
-        const result = await vscode.commands.executeCommand('killport.switchPort', from, to, { confirm: false });
+        const result = await vscode.commands.executeCommand('porthub.switchPort', from, to, { confirm: false });
         assert.strictEqual(result.ok, true, `${result.message}\ncommand: ${result.command}`);
         assert.ok(result.command.includes(`PORT=${to}`), `command should set the new port: ${result.command}`);
         assert.strictEqual(await isPortFree(from), true, 'old port should be free');
@@ -285,10 +285,10 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
 
     it('with two programs on one port (IPv4 + IPv6), moves only the chosen one', async function () {
       this.timeout(60000 * SLOW);
-      await vscode.workspace.getConfiguration('killport').update('warnSharedPorts', false, vscode.ConfigurationTarget.Global);
+      await vscode.workspace.getConfiguration('porthub').update('warnSharedPorts', false, vscode.ConfigurationTarget.Global);
       const [port, to] = [await freePort(), await freePort()];
       const listen = (host) =>
-        spawn(process.execPath, ['-e', `require('http').createServer((q, s) => s.end('${host}')).listen(${port}, '${host}')`], { env: NODE_ENV, stdio: 'ignore', cwd: process.env.KILLPORT_TEST_WORKSPACE });
+        spawn(process.execPath, ['-e', `require('http').createServer((q, s) => s.end('${host}')).listen(${port}, '${host}')`], { env: NODE_ENV, stdio: 'ignore', cwd: process.env.PORTHUB_TEST_WORKSPACE });
       const v4 = listen('127.0.0.1');
       const v6 = listen('::1');
       children.push(v4, v6);
@@ -297,7 +297,7 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
         return ext.exports.getPorts().filter((e) => e.port === port).length === 2;
       }, 10000, 'both servers to listen on the same port');
 
-      const result = await vscode.commands.executeCommand('killport.switchPort', port, to, { pid: v4.pid, command: node(`server.js --port ${to}`) });
+      const result = await vscode.commands.executeCommand('porthub.switchPort', port, to, { pid: v4.pid, command: node(`server.js --port ${to}`) });
       assert.strictEqual(result.ok, true, result.message);
       await exited(v4);
       assert.strictEqual(v6.exitCode, null, 'the IPv6 server must keep running');
@@ -310,11 +310,11 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
     it('restarts a server that was not started from VS Code in a new terminal, in its folder', async function () {
       this.timeout(60000 * SLOW);
       const [from, to] = [await freePort(), await freePort()];
-      const child = spawn(process.execPath, [path.join(process.env.KILLPORT_TEST_WORKSPACE, 'server.js'), '--port', String(from)], { cwd: process.env.KILLPORT_TEST_WORKSPACE, env: NODE_ENV, stdio: 'ignore' });
+      const child = spawn(process.execPath, [path.join(process.env.PORTHUB_TEST_WORKSPACE, 'server.js'), '--port', String(from)], { cwd: process.env.PORTHUB_TEST_WORKSPACE, env: NODE_ENV, stdio: 'ignore' });
       children.push(child);
       await waitFor(async () => !(await isPortFree(from)), 10000 * SLOW, 'server to listen');
 
-      const result = await vscode.commands.executeCommand('killport.switchPort', from, to, { command: node(`server.js --port ${to}`) });
+      const result = await vscode.commands.executeCommand('porthub.switchPort', from, to, { command: node(`server.js --port ${to}`) });
       assert.strictEqual(result.ok, true, result.message);
       await exited(child);
       await ext.exports.refresh();
@@ -322,7 +322,7 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
       assert.ok(moved, 'new port should be listening');
       // realpathSync.native also expands Windows 8.3 short names (C:\\Users\\RUNNER~1\\...).
       const same = (a, b) => fs.realpathSync.native(a).toLowerCase() === fs.realpathSync.native(b).toLowerCase();
-      assert.ok(same(moved.cwd, process.env.KILLPORT_TEST_WORKSPACE), `should start in the original folder (got ${moved.cwd})`);
+      assert.ok(same(moved.cwd, process.env.PORTHUB_TEST_WORKSPACE), `should start in the original folder (got ${moved.cwd})`);
       vscode.window.terminals.find((t) => t.name.endsWith(`:${to}`))?.dispose();
     });
   });
@@ -331,10 +331,10 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
     this.timeout(30000 * SLOW);
     const fs = require('node:fs');
     const os = require('node:os');
-    const cfg = () => vscode.workspace.getConfiguration('killport');
+    const cfg = () => vscode.workspace.getConfiguration('porthub');
     const [inside, outside] = [await freePort(), await freePort()];
-    const a = await startServer(inside, process.env.KILLPORT_TEST_WORKSPACE);
-    const b = await startServer(outside, fs.mkdtempSync(path.join(os.tmpdir(), 'killport-elsewhere-')));
+    const a = await startServer(inside, process.env.PORTHUB_TEST_WORKSPACE);
+    const b = await startServer(outside, fs.mkdtempSync(path.join(os.tmpdir(), 'porthub-elsewhere-')));
     children.push(a, b);
     const visible = async () => {
       await ext.exports.refresh();
@@ -365,12 +365,12 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
     }
   });
 
-  it('frees a port with a killport task from tasks.json (preLaunchTask)', async () => {
-    const port = Number(process.env.KILLPORT_TEST_TASK_PORT);
-    const child = await startServer(port, process.env.KILLPORT_TEST_WORKSPACE);
+  it('frees a port with a porthub task from tasks.json (preLaunchTask)', async () => {
+    const port = Number(process.env.PORTHUB_TEST_TASK_PORT);
+    const child = await startServer(port, process.env.PORTHUB_TEST_WORKSPACE);
     children.push(child);
 
-    const tasks = await vscode.tasks.fetchTasks({ type: 'killport' });
+    const tasks = await vscode.tasks.fetchTasks({ type: 'porthub' });
     const task = tasks.find((t) => t.name === 'Free test port');
     assert.ok(task, `task from tasks.json not found (got: ${tasks.map((t) => t.name).join(', ')})`);
 
@@ -393,13 +393,13 @@ require('http').createServer((q, s) => s.end('ok')).listen(port, '127.0.0.1');`;
     this.timeout(60000 * SLOW);
 
     const port = await freePort();
-    const holder = await startServer(port, process.env.KILLPORT_TEST_WORKSPACE);
+    const holder = await startServer(port, process.env.PORTHUB_TEST_WORKSPACE);
     children.push(holder);
 
     // Plain bash without user rc files on macOS/Linux: personal shell configs can break shell integration.
     // (VS Code only injects shell integration for argument lists it recognises, so pass none.)
     const shell = process.platform === 'win32' ? {} : { shellPath: '/bin/bash', env: { BASH_ENV: '', HISTFILE: '/dev/null' } };
-    const terminal = vscode.window.createTerminal({ name: 'killport-it', cwd: process.env.KILLPORT_TEST_WORKSPACE, ...shell });
+    const terminal = vscode.window.createTerminal({ name: 'porthub-it', cwd: process.env.PORTHUB_TEST_WORKSPACE, ...shell });
     terminal.show(true);
     try {
       // Shell integration is needed to read command output; it is injected automatically for bash/zsh/pwsh.

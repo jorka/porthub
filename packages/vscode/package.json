@@ -1,6 +1,6 @@
 {
-  "name": "killport",
-  "displayName": "Killport",
+  "name": "porthub",
+  "displayName": "Port Hub",
   "description": "See every listening port and which process (and project) holds it, right next to your terminal. Kill it in one click. Also exposes an MCP server so AI agents can do the same.",
   "version": "0.1.0",
   "publisher": "JoroGeorgiev",
@@ -35,23 +35,23 @@
   "main": "./dist/extension.js",
   "activationEvents": [
     "onStartupFinished",
-    "onTaskType:killport"
+    "onTaskType:porthub"
   ],
   "contributes": {
     "viewsContainers": {
       "panel": [
         {
-          "id": "killport",
-          "title": "Killport",
+          "id": "porthub",
+          "title": "Port Hub",
           "icon": "$(plug)"
         }
       ]
     },
     "views": {
-      "killport": [
+      "porthub": [
         {
           "type": "webview",
-          "id": "killport.portsView",
+          "id": "porthub.portsView",
           "name": "Listening Ports",
           "icon": "$(plug)"
         }
@@ -59,145 +59,145 @@
     },
     "commands": [
       {
-        "command": "killport.refresh",
+        "command": "porthub.refresh",
         "title": "Refresh",
-        "category": "Killport",
+        "category": "Port Hub",
         "icon": "$(refresh)"
       },
       {
-        "command": "killport.killPort",
+        "command": "porthub.killPort",
         "title": "Kill Process on Port\u2026",
-        "category": "Killport",
+        "category": "Port Hub",
         "icon": "$(close)"
       },
       {
-        "command": "killport.show",
+        "command": "porthub.show",
         "title": "Show Listening Ports",
-        "category": "Killport"
+        "category": "Port Hub"
       },
       {
-        "command": "killport.openSettings",
+        "command": "porthub.openSettings",
         "title": "Open Settings",
-        "category": "Killport",
+        "category": "Port Hub",
         "icon": "$(gear)"
       },
       {
-        "command": "killport.editLabel",
+        "command": "porthub.editLabel",
         "title": "Label Port\u2026",
-        "category": "Killport"
+        "category": "Port Hub"
       },
       {
-        "command": "killport.stopWorkspaceServers",
+        "command": "porthub.stopWorkspaceServers",
         "title": "Stop Servers Started in This Workspace",
-        "category": "Killport",
+        "category": "Port Hub",
         "icon": "$(debug-stop)"
       },
       {
-        "command": "killport.openInBrowser",
+        "command": "porthub.openInBrowser",
         "title": "Open Port in Browser",
-        "category": "Killport"
+        "category": "Port Hub"
       },
       {
-        "command": "killport.toggleWatch",
+        "command": "porthub.toggleWatch",
         "title": "Watch / Unwatch Port",
-        "category": "Killport"
+        "category": "Port Hub"
       },
       {
-        "command": "killport.switchPort",
+        "command": "porthub.switchPort",
         "title": "Move Server to Another Port\u2026",
-        "category": "Killport",
+        "category": "Port Hub",
         "icon": "$(arrow-swap)"
       },
       {
-        "command": "killport.toggleHideApps",
+        "command": "porthub.toggleHideApps",
         "title": "Toggle Hide Apps & System",
-        "category": "Killport"
+        "category": "Port Hub"
       },
       {
-        "command": "killport.toggleWorkspaceOnly",
+        "command": "porthub.toggleWorkspaceOnly",
         "title": "Toggle This Workspace Only",
-        "category": "Killport"
+        "category": "Port Hub"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "killport.refresh",
-          "when": "view == killport.portsView",
+          "command": "porthub.refresh",
+          "when": "view == porthub.portsView",
           "group": "navigation@2"
         },
         {
-          "command": "killport.killPort",
-          "when": "view == killport.portsView",
+          "command": "porthub.killPort",
+          "when": "view == porthub.portsView",
           "group": "navigation@1"
         },
         {
-          "command": "killport.openSettings",
-          "when": "view == killport.portsView",
+          "command": "porthub.openSettings",
+          "when": "view == porthub.portsView",
           "group": "navigation@9"
         },
         {
-          "command": "killport.stopWorkspaceServers",
-          "when": "view == killport.portsView",
+          "command": "porthub.stopWorkspaceServers",
+          "when": "view == porthub.portsView",
           "group": "1_workspace"
         }
       ],
       "commandPalette": [
         {
-          "command": "killport.openInBrowser",
+          "command": "porthub.openInBrowser",
           "when": "false"
         },
         {
-          "command": "killport.toggleWatch",
+          "command": "porthub.toggleWatch",
           "when": "false"
         }
       ]
     },
     "configuration": {
-      "title": "Killport",
+      "title": "Port Hub",
       "properties": {
-        "killport.hideAppsAndSystem": {
+        "porthub.hideAppsAndSystem": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Hide ports held by desktop apps (inside a macOS `.app`: Discord, Chrome, VS Code's own helpers\u2026), OS services (`/System`, `/usr/libexec`, `C:\\\\Windows`) and editor/agent helpers (anything running from `~/.vscode/extensions`, e.g. Claude Code). Docker containers, and dev servers installed as apps (Postgres.app, Herd, Ollama\u2026), stay visible."
         },
-        "killport.workspaceOnly": {
+        "porthub.workspaceOnly": {
           "type": "boolean",
           "default": false,
           "description": "Only show servers started from the folder open in this window (Docker Compose containers count by their project folder)."
         },
-        "killport.hideSystemPorts": {
+        "porthub.hideSystemPorts": {
           "type": "boolean",
           "default": false,
           "description": "Hide ports below 1024."
         },
-        "killport.portRange": {
+        "porthub.portRange": {
           "type": "string",
           "default": "",
           "markdownDescription": "Only show these ports, e.g. `3000-9999` or `3000-3999,5432,8080`. Empty shows all."
         },
-        "killport.autoRefreshInterval": {
+        "porthub.autoRefreshInterval": {
           "type": "number",
           "default": 5,
           "minimum": 0,
           "description": "Seconds between automatic refreshes (0 turns it off). Only runs while the VS Code window is focused."
         },
-        "killport.confirmBeforeKill": {
+        "porthub.confirmBeforeKill": {
           "type": "boolean",
           "default": true,
           "description": "Ask before killing a process."
         },
-        "killport.showStatusBar": {
+        "porthub.showStatusBar": {
           "type": "boolean",
           "default": true,
           "description": "Show the listening-port count in the status bar."
         },
-        "killport.detectPortConflicts": {
+        "porthub.detectPortConflicts": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Watch terminal output for **port already in use** errors (`EADDRINUSE`, Vite/Next \"Port 3000 is in use\", Go, Python, Rails, PHP, Spring, Docker\u2026) and offer to kill whatever holds the port. Needs VS Code 1.93+ with terminal shell integration (on by default)."
         },
-        "killport.portLabels": {
+        "porthub.portLabels": {
           "type": "object",
           "default": {},
           "additionalProperties": {
@@ -205,12 +205,12 @@
           },
           "markdownDescription": "Your own names for ports, shown in the panel, e.g. `{ \"3000\": \"rezicard front\", \"55432\": \"rezicard db\" }`. Click the \u270e next to a port to edit."
         },
-        "killport.stopServersOnClose": {
+        "porthub.stopServersOnClose": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "When this VS Code window closes, stop the servers that were started from its workspace folder (dev servers, watchers\u2026), so they don't keep ports busy. Docker containers are left running."
         },
-        "killport.openBrowserIn": {
+        "porthub.openBrowserIn": {
           "type": "string",
           "enum": [
             "external",
@@ -223,7 +223,7 @@
           "default": "external",
           "description": "Where clicking a web server's port opens it."
         },
-        "killport.watchPorts": {
+        "porthub.watchPorts": {
           "type": "array",
           "items": {
             "type": "integer",
@@ -233,12 +233,12 @@
           "default": [],
           "markdownDescription": "Ports you expect to be running, e.g. `[3000, 5432]`. They stay in the panel when down, the status bar warns while one is down, and you get a notification when one stops or starts. Click \u2606 on a row to add one."
         },
-        "killport.notifyWatchedPorts": {
+        "porthub.notifyWatchedPorts": {
           "type": "boolean",
           "default": true,
           "description": "Notify when a watched port stops or starts listening."
         },
-        "killport.warnSharedPorts": {
+        "porthub.warnSharedPorts": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Warn when two programs listen on the same port, one on IPv4 and one on IPv6. The OS allows it, but `localhost:<port>` and `127.0.0.1:<port>` then reach different apps."
@@ -247,13 +247,13 @@
     },
     "mcpServerDefinitionProviders": [
       {
-        "id": "killport.mcp",
-        "label": "Killport"
+        "id": "porthub.mcp",
+        "label": "Port Hub"
       }
     ],
     "taskDefinitions": [
       {
-        "type": "killport",
+        "type": "porthub",
         "required": [
           "ports"
         ],
@@ -283,7 +283,7 @@
     "test:integration": "node esbuild.mjs && node test/runTest.mjs"
   },
   "devDependencies": {
-    "@killport/core": "0.1.0",
+    "@porthub/core": "0.1.0",
     "@types/mocha": "^10.0.10",
     "@types/vscode": "~1.90.0",
     "@vscode/test-electron": "^3.1.0",

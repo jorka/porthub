@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { randomBytes } from 'node:crypto';
 import { homedir } from 'node:os';
 import { remoteHostLabel, viewFilters, type PortStore, type Snapshot } from './store';
-import { findSharedPorts } from '@killport/core';
+import { findSharedPorts } from '@porthub/core';
 import { killEntry, killMany } from './kill';
 import { editPortLabel, getPortLabels } from './labels';
 import { workspaceRoots } from './workspaceServers';
@@ -24,7 +24,7 @@ type FromWebview =
   | { type: 'copy'; text: string };
 
 export class PortsViewProvider implements vscode.WebviewViewProvider {
-  static readonly viewId = 'killport.portsView';
+  static readonly viewId = 'porthub.portsView';
   private view?: vscode.WebviewView;
   /** Set by activate(); provides the watched-ports status for the panel. */
   watcher?: PortWatcher;
@@ -84,7 +84,7 @@ export class PortsViewProvider implements vscode.WebviewViewProvider {
         break;
       }
       case 'switchPort':
-        await vscode.commands.executeCommand('killport.switchPort', msg.port, undefined, { pid: msg.pid });
+        await vscode.commands.executeCommand('porthub.switchPort', msg.port, undefined, { pid: msg.pid });
         break;
       case 'toggleWatch':
         await toggleWatchedPort(msg.port); // setting change re-renders
@@ -101,7 +101,7 @@ export class PortsViewProvider implements vscode.WebviewViewProvider {
         break;
       case 'setFilter':
         // Saving the setting triggers onDidChangeConfiguration → refresh → re-render.
-        await vscode.workspace.getConfiguration('killport').update(msg.key, msg.value, vscode.ConfigurationTarget.Global);
+        await vscode.workspace.getConfiguration('porthub').update(msg.key, msg.value, vscode.ConfigurationTarget.Global);
         break;
       case 'openFolder':
         void vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(msg.cwd));
@@ -145,7 +145,7 @@ export class PortsViewProvider implements vscode.WebviewViewProvider {
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="${css}">
-<title>Killport</title>
+<title>Port Hub</title>
 </head>
 <body>
   <header class="toolbar">
@@ -181,10 +181,10 @@ export class PortsViewProvider implements vscode.WebviewViewProvider {
   }
 }
 
-/** Opens http(s)://localhost:<port> in the browser or VS Code's Simple Browser (killport.openBrowserIn). */
+/** Opens http(s)://localhost:<port> in the browser or VS Code's Simple Browser (porthub.openBrowserIn). */
 export async function openInBrowser(port: number, scheme: 'http' | 'https' = 'http', host = 'localhost'): Promise<void> {
   const url = `${scheme}://${host}:${port}`;
-  if (vscode.workspace.getConfiguration('killport').get<string>('openBrowserIn', 'external') === 'simpleBrowser') {
+  if (vscode.workspace.getConfiguration('porthub').get<string>('openBrowserIn', 'external') === 'simpleBrowser') {
     try {
       await vscode.commands.executeCommand('simpleBrowser.show', url);
       return;

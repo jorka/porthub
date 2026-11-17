@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { realpathSync } from 'node:fs';
-import { stopEntry, type PortEntry } from '@killport/core';
+import { stopEntry, type PortEntry } from '@porthub/core';
 import { killMany } from './kill';
 import type { PortStore } from './store';
 
@@ -60,11 +60,11 @@ export async function stopWorkspaceServers(store: PortStore): Promise<void> {
 }
 
 /**
- * Called from deactivate() when the window closes and `killport.stopServersOnClose` is on.
+ * Called from deactivate() when the window closes and `porthub.stopServersOnClose` is on.
  * Stops processes only (docker stop is too slow for shutdown), in parallel and with a short grace period.
  */
 export async function stopWorkspaceServersOnClose(store: PortStore): Promise<void> {
-  if (!vscode.workspace.getConfiguration('killport').get<boolean>('stopServersOnClose', false)) return;
+  if (!vscode.workspace.getConfiguration('porthub').get<boolean>('stopServersOnClose', false)) return;
   const servers = await Promise.race([
     workspaceServers(store, { includeContainers: false }),
     new Promise<PortEntry[]>((r) => setTimeout(() => r(store.snapshot.entries.filter((e) => isInWorkspace(e.cwd) && !e.container && !e.isContainerRuntime)), 1500)),
