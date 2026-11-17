@@ -7,12 +7,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jorka/killport.git"
+    "url": "https://github.com/jorka/porthub.git"
   },
   "bugs": {
-    "url": "https://github.com/jorka/killport/issues"
+    "url": "https://github.com/jorka/porthub/issues"
   },
-  "homepage": "https://github.com/jorka/killport#readme",
+  "homepage": "https://github.com/jorka/porthub#readme",
   "engines": {
     "vscode": "^1.90.0"
   },

@@ -3,7 +3,7 @@
 ## One-time setup (needs your accounts)
 
 1. **Publisher:** `JoroGeorgiev` (set in `packages/vscode/package.json`; extension ID `JoroGeorgiev.porthub`).
-2. **Repository:** https://github.com/jorka/killport (set in both `package.json` files).
+2. **Repository:** https://github.com/jorka/porthub (set in both `package.json` files).
 3. **Secrets** (GitHub → Settings → Secrets → Actions). Any that are missing are skipped:
    - `VSCE_PAT`: Azure DevOps token with *Marketplace → Manage* scope
    - `OVSX_PAT`: token from https://open-vsx.org (Cursor, Windsurf, VSCodium install from there)
