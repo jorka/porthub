@@ -212,6 +212,8 @@
     service: '<path d="M8 2 14.5 5.25 8 8.5 1.5 5.25z"/><path d="m1.5 8 6.5 3.25L14.5 8"/><path d="m1.5 10.75 6.5 3.25 6.5-3.25"/>',
     memory: '<path d="M1 8.5h3l2-5 4 9 2-4h3"/>',
     process: '<rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="m4.5 6.5 2 1.75-2 1.75M8.5 10.5h3"/>',
+    kill: '<path d="M8 1.75v5.5"/><path d="M4.6 3.9a5.25 5.25 0 1 0 6.8 0"/>',
+    stop: '<rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>',
   };
 
   /** @param {string} paths */
@@ -567,12 +569,11 @@
           h('td', { class: 'c-act' }, [
             h('button', {
               class: 'kill',
-              text: verb,
               title: killTitle,
               'aria-label': `${verb} ${c ? 'container' : 'process'} on port ${e.port}`,
               disabled: !killable,
               onclick: (/** @type {MouseEvent} */ ev) => vscode.postMessage({ type: 'kill', pid: e.pid, port: e.port, force: ev.shiftKey }),
-            }),
+            }, [icon(c ? ICONS.stop : ICONS.kill), verb]),
           ]),
         ]);
       }),

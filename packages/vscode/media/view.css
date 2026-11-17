@@ -167,7 +167,7 @@ button.kill.danger {
 .pico.generic { color: var(--muted); } /* fixed px: % widths give fractional cell edges that show as seams on highlighted rows */
 .c-pid { width: 64px; font-variant-numeric: tabular-nums; color: var(--muted); }
 .c-addr { width: 110px; color: var(--muted); }
-.c-act { width: 60px; text-align: right; white-space: nowrap; }
+.c-act { width: 80px; text-align: right; white-space: nowrap; }
 /* ⇄ sits next to the port number and stays visible (✎ and ☆ appear on hover). */
 button.icon.move { opacity: 0.7; font-size: 1.05em; }
 tr:hover button.icon.move, button.icon.move:focus-visible { opacity: 1; }
@@ -181,7 +181,9 @@ button.icon.move:disabled { display: none; }
 .cmd {
   color: var(--muted);
   font-family: var(--vscode-editor-font-family);
-  font-size: 0.92em;
+  font-size: 0.8em;
+  line-height: 1.5;
+  opacity: 0.85;
   cursor: copy;
 }
 
@@ -215,22 +217,41 @@ button.badge.terminal {
 button.badge.terminal:hover { text-decoration: underline; }
 button.badge.terminal:focus-visible { outline: 1px solid var(--vscode-focusBorder); }
 
+/* Row action: quiet until the row is hovered, red when the button itself is. */
 button.kill {
-  padding: 1px 10px;
-  color: var(--vscode-button-secondaryForeground);
-  background: var(--vscode-button-secondaryBackground);
-  border: 1px solid var(--vscode-button-border, transparent);
-  border-radius: 2px;
+  --danger: var(--vscode-errorForeground, #f14c4c);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 62px;
+  padding: 2px 9px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  border-radius: 4px;
   font: inherit;
+  font-size: 0.92em;
+  line-height: 1.4;
   cursor: pointer;
+  transition: color 0.12s, background-color 0.12s, border-color 0.12s;
 }
-button.kill:hover:not(:disabled) {
-  color: var(--vscode-errorForeground);
-  background: var(--vscode-inputValidation-errorBackground, var(--vscode-button-secondaryHoverBackground));
-  border-color: var(--vscode-inputValidation-errorBorder, transparent);
+button.kill .ico { display: inline-flex; }
+button.kill .ico svg { width: 12px; height: 12px; }
+tr:hover button.kill:not(:disabled) {
+  color: var(--vscode-foreground);
+  border-color: color-mix(in srgb, var(--muted) 55%, transparent);
 }
+tr:hover button.kill:hover:not(:disabled),
+button.kill.danger:hover:not(:disabled) {
+  color: #fff;
+  background: color-mix(in srgb, var(--danger) 85%, transparent);
+  border-color: var(--danger);
+}
+button.kill:active:not(:disabled) { transform: translateY(0.5px); }
 button.kill:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: 1px; }
-button.kill:disabled { opacity: 0.4; cursor: not-allowed; }
+button.kill:disabled { opacity: 0.35; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { button.kill { transition: none; } }
 
 .empty { color: var(--muted); padding: 12px 8px; }
 .hidden-note { color: var(--muted); padding: 8px; margin: 0; font-size: 0.92em; }
