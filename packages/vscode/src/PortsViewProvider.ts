@@ -138,6 +138,7 @@ export class PortsViewProvider implements vscode.WebviewViewProvider {
     const nonce = randomBytes(16).toString('hex');
     const css = webview.asWebviewUri(vscode.Uri.joinPath(media, 'view.css'));
     const js = webview.asWebviewUri(vscode.Uri.joinPath(media, 'view.js'));
+    const icons = webview.asWebviewUri(vscode.Uri.joinPath(media, 'icons.js'));
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,7 +155,12 @@ export class PortsViewProvider implements vscode.WebviewViewProvider {
     <label class="toggle" id="workspace-toggle" title="Only servers started from the folder open in this window"><input id="workspace-only" type="checkbox"> This workspace</label>
     <label class="toggle" title="Refresh automatically"><input id="auto" type="checkbox" checked> Auto-refresh</label>
     <button id="kill-selected" class="kill danger" type="button" hidden title="Kill every selected port. Shift+click to force kill."></button>
-    <span id="status" class="status" aria-live="polite"></span>
+    <div id="stats" class="stats">
+      <span id="status" class="stat stat-ports" aria-live="polite"><span class="dot" aria-hidden="true"></span><span class="txt"></span></span>
+      <span id="stat-containers" class="stat" hidden></span>
+      <span id="stat-services" class="stat" hidden></span>
+      <span id="stat-memory" class="stat" hidden></span>
+    </div>
   </header>
   <div id="error" class="error" hidden></div>
   <table>
@@ -175,6 +181,7 @@ export class PortsViewProvider implements vscode.WebviewViewProvider {
   </table>
   <p id="empty" class="empty" hidden></p>
   <p id="hidden-note" class="hidden-note" hidden></p>
+  <script nonce="${nonce}" src="${icons}"></script>
   <script nonce="${nonce}" src="${js}"></script>
 </body>
 </html>`;

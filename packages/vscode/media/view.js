@@ -14,6 +14,10 @@
   const hiddenNoteEl = $('hidden-note');
   const rowsEl = $('rows');
   const statusEl = $('status');
+  const statusTextEl = /** @type {HTMLElement} */ (statusEl.querySelector('.txt'));
+  const statContainersEl = $('stat-containers');
+  const statServicesEl = $('stat-services');
+  const statMemoryEl = $('stat-memory');
   const errorEl = $('error');
   const emptyEl = $('empty');
 
@@ -200,6 +204,121 @@
     });
   }
 
+  // ---------- stats ----------
+
+  /** 16×16 line icons drawn with currentColor. */
+  const ICONS = {
+    container: '<path d="M8 1.5 14 4.75v6.5L8 14.5 2 11.25v-6.5z"/><path d="M2 4.75 8 8l6-3.25M8 8v6.5"/>',
+    service: '<path d="M8 2 14.5 5.25 8 8.5 1.5 5.25z"/><path d="m1.5 8 6.5 3.25L14.5 8"/><path d="m1.5 10.75 6.5 3.25 6.5-3.25"/>',
+    memory: '<path d="M1 8.5h3l2-5 4 9 2-4h3"/>',
+    process: '<rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="m4.5 6.5 2 1.75-2 1.75M8.5 10.5h3"/>',
+  };
+
+  /** @param {string} paths */
+  function icon(paths) {
+    const span = h('span', { class: 'ico', 'aria-hidden': 'true' });
+    span.innerHTML = `<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">${paths}</svg>`;
+    return span;
+  }
+
+  /** @param {HTMLElement} el @param {string} paths @param {number} n @param {string} noun @param {string} title */
+  function setStat(el, paths, n, noun, title) {
+    el.hidden = n === 0;
+    el.title = title;
+    el.replaceChildren(icon(paths), h('b', { text: String(n) }), ` ${noun}`);
+  }
+
+  // ---------- process icons ----------
+
+  /** @type {Record<string, { title: string, path: string, color: string | null }>} */
+  // @ts-ignore set by icons.js
+  const BRANDS = window.PORTHUB_ICONS || {};
+
+  /** Frameworks first (seen in the command line), then the program itself. First match wins. */
+  /** @type {[RegExp, string][]} */
+  const BY_COMMAND = [
+    [/\bnext(-server|\b.*\b(dev|start)\b)/, 'nextdotjs'],
+    [/\bnuxi?\b/, 'nuxt'],
+    [/\bastro\b/, 'astro'],
+    [/\bremix\b/, 'remix'],
+    [/\bng serve\b|@angular/, 'angular'],
+    [/\bsvelte-?kit\b/, 'svelte'],
+    [/\bnest\b.*\bstart\b|@nestjs/, 'nestjs'],
+    [/\bvite\b/, 'vite'],
+    [/manage\.py\b.*\brunserver|\bdjango\b/, 'django'],
+    [/\bflask\b/, 'flask'],
+    [/\b(uvicorn|fastapi)\b/, 'fastapi'],
+    [/\b(rails|puma)\b/, 'rubyonrails'],
+    [/\bartisan\b.*\bserve\b|\blaravel\b/, 'laravel'],
+    [/\bsymfony\b/, 'symfony'],
+    [/\bphx\.server\b/, 'elixir'],
+    [/\brabbit/, 'rabbitmq'],
+    [/elasticsearch/, 'elasticsearch'],
+    [/\bkafka\b/, 'apachekafka'],
+    [/[\\/]go-build\d*[\\/]/, 'go'],
+  ];
+  /** @type {[RegExp, string][]} */
+  const BY_NAME = [
+    [/^(node|nodejs)$/, 'nodedotjs'],
+    [/^bun$/, 'bun'],
+    [/^deno$/, 'deno'],
+    [/^python[\d.]*$|^uvicorn$|^gunicorn$/, 'python'],
+    [/^(ruby|puma)/, 'ruby'],
+    [/^php(-fpm)?[\d.]*$/, 'php'],
+    [/^symfony$/, 'symfony'],
+    [/^java$/, 'openjdk'],
+    [/^dotnet$/, 'dotnet'],
+    [/^(postgres|postmaster)/, 'postgresql'],
+    [/^mariadbd?$/, 'mariadb'],
+    [/^mysqld?$/, 'mysql'],
+    [/^redis/, 'redis'],
+    [/^mongo[ds]?$/, 'mongodb'],
+    [/^nginx$/, 'nginx'],
+    [/^caddy$/, 'caddy'],
+    [/^(httpd|apache2?)$/, 'apache'],
+    [/^beam\.smp$/, 'erlang'],
+    [/^cloudflared$/, 'cloudflare'],
+    [/^ngrok$/, 'ngrok'],
+    [/^minio$/, 'minio'],
+    [/^clickhouse/, 'clickhouse'],
+    [/^(com\.docker|docker|vpnkit|orbstack)/, 'docker'],
+  ];
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  /** @param {string} title @param {string} viewBox @param {string} [cls] */
+  function svgIcon(title, viewBox, cls) {
+    const span = h('span', { class: 'pico' + (cls ? ' ' + cls : ''), title });
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', viewBox);
+    svg.setAttribute('aria-hidden', 'true');
+    span.append(svg);
+    return { span, svg };
+  }
+
+  /** Logo for a row: the framework or program when known, else a box (container) or a generic program icon. @param {any} e */
+  function processIcon(e) {
+    if (e.container) {
+      const { span, svg } = svgIcon('Docker container', '0 0 16 16', 'line');
+      svg.innerHTML = ICONS.container; // static constant
+      return span;
+    }
+    const name = String(e.processName || '').toLowerCase().replace(/\.exe$/, '');
+    const cmd = String(e.command || '').toLowerCase();
+    const slug = BY_COMMAND.find(([re]) => re.test(cmd))?.[1] ?? BY_NAME.find(([re]) => re.test(name))?.[1];
+    const brand = slug ? BRANDS[slug] : undefined;
+    if (brand) {
+      const { span, svg } = svgIcon(brand.title, '0 0 24 24');
+      const path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', brand.path);
+      svg.append(path);
+      if (brand.color) span.style.color = brand.color;
+      return span;
+    }
+    const { span, svg } = svgIcon(e.processName, '0 0 16 16', 'line generic');
+    svg.innerHTML = ICONS.process; // static constant
+    return span;
+  }
+
   // ---------- render ----------
 
   function render() {
@@ -238,11 +357,38 @@
     killSelectedEl.textContent = `Kill ${selectedVisible} selected`;
 
     const total = pool.length;
-    statusEl.textContent = (data.loading && !data.updatedAt
-      ? 'Loading…'
-      : q ? `${entries.length} of ${total}` : `${total} port${total === 1 ? '' : 's'}`) + (data.host ? ` · ${data.host}` : '');
-    statusEl.title = data.host ? `Showing ports in ${data.host} (where this window's workspace runs)` : '';
+    statusTextEl.replaceChildren(
+      ...(data.loading && !data.updatedAt
+        ? ['Loading…']
+        : [h('b', { text: q ? `${entries.length}` : `${total}` }), q ? ` of ${total} ports` : ` port${total === 1 ? '' : 's'}`]),
+      data.host ? ` · ${data.host}` : '',
+    );
+    statusEl.title = [
+      data.paused ? 'Auto-refresh is paused' : 'Refreshing automatically',
+      data.host && `Showing ports in ${data.host} (where this window's workspace runs)`,
+    ].filter(Boolean).join('\n');
     statusEl.classList.toggle('busy', !!data.loading);
+    statusEl.classList.toggle('paused', !!data.paused);
+
+    // Summary of what is listed: each container / process counted once, whatever its number of ports.
+    const containerIds = new Set();
+    /** @type {Map<number, number | undefined>} */
+    const procMem = new Map();
+    for (const e of entries) {
+      if (e.container) containerIds.add(e.container.id || e.container.name);
+      else if (e.pid && !e.isContainerRuntime) procMem.set(e.pid, e.memoryKB);
+    }
+    const memValues = [...procMem.values()].filter((v) => v !== undefined);
+    const memKB = memValues.reduce((a, b) => a + /** @type {number} */ (b), 0);
+    setStat(statContainersEl, ICONS.container, containerIds.size, containerIds.size === 1 ? 'container' : 'containers',
+      'Docker containers with a published port');
+    setStat(statServicesEl, ICONS.service, procMem.size, procMem.size === 1 ? 'process' : 'processes',
+      'Processes listening on the ports above (each counted once)');
+    statMemoryEl.hidden = memValues.length === 0;
+    if (memValues.length) {
+      statMemoryEl.title = `Memory used by the ${memValues.length} listed process${memValues.length === 1 ? '' : 'es'}` + (containerIds.size ? ' (containers not included)' : '');
+      statMemoryEl.replaceChildren(icon(ICONS.memory), h('b', { text: formatMemory(memKB) }), ' RAM');
+    }
 
     const watchedSet = new Set((data.watched || []).map((/** @type {any} */ w) => w.port));
     // Watched ports that are not listening: shown as greyed rows so the expected setup stays visible.
@@ -372,6 +518,7 @@
             label && h('div', { class: 'port-label', title: label, text: label }),
           ]),
           h('td', { class: 'c-proc', title: procTitle }, [
+            processIcon(e),
             h('span', { text: c ? (c.composeService || c.name) : e.processName }),
             c && h('span', { class: 'badge muted', text: 'container' }),
             isRuntime && h('span', { class: 'badge muted', text: 'runtime' }),
