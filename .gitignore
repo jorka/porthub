@@ -6,3 +6,4 @@ packages/vscode/LICENSE
 .vscode-test/
 packages/vscode/CHANGELOG.md
 packages/mcp/LICENSE
+.DS_Store

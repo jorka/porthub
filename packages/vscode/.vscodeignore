@@ -6,3 +6,4 @@ dist/**/*.map
 test/**
 .vscode-test/**
 images/*.svg
+images/icon-source.png
