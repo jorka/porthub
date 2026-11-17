@@ -14,8 +14,6 @@ When you run several dev servers, databases and tools at once, sooner or later y
 
 It works on **macOS, Linux and Windows**.
 
-Port Hub also ships an **MCP server**, so AI coding agents (Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot and others) can find and free ports on their own, for example when `npm run dev` fails because the port is taken.
-
 ---
 
 ## VS Code extension
@@ -111,53 +109,6 @@ Port Hub will not let you kill VS Code itself; those rows are marked `VS Code` a
 
 ---
 
-## For AI agents (MCP server)
-
-The `porthub-mcp` server gives agents four tools:
-
-| Tool | What it does |
-| --- | --- |
-| `list_ports` | Lists listening ports with pid, process, command line and working directory. Filters: `port`, `range`, `includeSystem`, `localhostOnly`, `includeApps` (desktop apps and editor helpers are left out unless a port is given). Read-only. |
-| `find_free_port` | Is port 3000 free? If not, who holds it, and which ports nearby are free. Use before starting a server instead of guessing. Read-only. |
-| `wait_for_port` | Waits until a port is listening (a dev server you just started is ready, and whether it answers HTTP) or until it is free. Replaces `sleep` loops. Read-only. |
-| `kill_port` | Frees a port: sends a graceful terminate, and with `force: true` escalates to a hard kill. Container ports are freed with `docker stop` on that container. Marked destructive, so your client asks before running it. |
-
-**Built-in safety:** `kill_port` never kills the agent itself or anything in its own process tree (even with `force`), never kills Docker Desktop / OrbStack themselves, never kills PID 0/1 or Windows "System", and needs `force: true` for ports below 1024.
-
-### Claude Code
-
-```sh
-claude mcp add porthub -- npx -y porthub-mcp
-```
-
-### Codex CLI
-
-`~/.codex/config.toml`:
-
-```toml
-[mcp_servers.porthub]
-command = "npx"
-args = ["-y", "porthub-mcp"]
-```
-
-### Cursor, Windsurf, Gemini CLI, Claude Desktop and others
-
-Add this to the client's MCP config (`.cursor/mcp.json`, `~/.gemini/settings.json`, `claude_desktop_config.json`, …):
-
-```json
-{
-  "mcpServers": {
-    "porthub": { "command": "npx", "args": ["-y", "porthub-mcp"] }
-  }
-}
-```
-
-### VS Code / GitHub Copilot
-
-Nothing to configure. With the extension installed on VS Code 1.101 or newer, the **Port Hub** MCP server appears automatically for Copilot agent mode. It runs on VS Code's own Node runtime, so you don't need Node installed.
-
----
-
 ## How it works
 
 | OS | Listening ports | Command line | Folder |
@@ -176,7 +127,7 @@ Without admin rights, the OS only shows the owner of ports opened by **your own 
 
 ```sh
 npm install
-npm run build             # bundles the extension and the MCP server
+npm run build             # bundles the extension
 npm test                  # unit tests + real-system tests (starts a server, finds it, kills it)
 npm run test:integration  # runs the extension inside a real VS Code (downloads one; or set VSCODE_EXECUTABLE_PATH)
 npm run typecheck
@@ -184,13 +135,11 @@ npm run package           # produces packages/vscode/porthub-<version>.vsix
 ```
 
 - **Run the extension:** open this folder in VS Code and press **F5**.
-- **Try the MCP server:** `npx @modelcontextprotocol/inspector node packages/mcp/dist/server.js`
 - **CI:** `.github/workflows/ci.yml` runs everything on macOS, Linux and Windows, against the latest VS Code and the oldest supported one (1.90).
 - **Releasing:** see `RELEASING.md` in the repository.
 
 ```
 packages/
   core/    shared port listing + kill logic (no VS Code dependency)
-  vscode/  the extension (panel webview, commands, status bar, terminal watcher, MCP registration)
-  mcp/     the porthub-mcp stdio server
+  vscode/  the extension (panel webview, commands, status bar, terminal watcher)
 ```

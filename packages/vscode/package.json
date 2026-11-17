@@ -1,7 +1,7 @@
 {
   "name": "porthub",
   "displayName": "Port Hub",
-  "description": "See every listening port and which process (and project) holds it, right next to your terminal. Kill it in one click. Also exposes an MCP server so AI agents can do the same.",
+  "description": "See every listening port and which process (and project) holds it, right next to your terminal. Kill it in one click.",
   "version": "0.1.0",
   "publisher": "JoroGeorgiev",
   "license": "MIT",
@@ -29,7 +29,6 @@
     "address already in use",
     "process",
     "docker",
-    "mcp",
     "dev server"
   ],
   "main": "./dist/extension.js",
@@ -245,12 +244,6 @@
         }
       }
     },
-    "mcpServerDefinitionProviders": [
-      {
-        "id": "porthub.mcp",
-        "label": "Port Hub"
-      }
-    ],
     "taskDefinitions": [
       {
         "type": "porthub",

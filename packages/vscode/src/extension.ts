@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import type { PortEntry } from '@porthub/core';
 import { PortStore, remoteHostLabel } from './store';
-import { optionalApi } from './optionalApi';
 import { PortsViewProvider, openInBrowser } from './PortsViewProvider';
 import { entryLabel, killEntry } from './kill';
 import { editPortLabel, getPortLabels } from './labels';
@@ -103,7 +102,6 @@ export function activate(ctx: vscode.ExtensionContext): PortHubApi {
     show: (port) => provider.showPort(port),
     move: (port, pid) => switchPort(store, port, undefined, { pid }),
   });
-  registerMcpServer(ctx);
   store.restartTimer();
   void store.refresh();
   return { onDidDetectPortConflict, getPorts: () => store.snapshot.entries,
@@ -161,32 +159,6 @@ async function pickAndKill(store: PortStore, port?: number): Promise<void> {
     return;
   }
   for (const e of picked) await killEntry(store, e);
-}
-
-/**
- * Registers the bundled MCP server with VS Code (Copilot agent mode etc.).
- * The API arrived in VS Code 1.101; older versions and forks without it just skip this.
- */
-function registerMcpServer(ctx: vscode.ExtensionContext): void {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const api = vscode as any;
-  const register = optionalApi(() => api.lm?.registerMcpServerDefinitionProvider);
-  const Definition = optionalApi(() => api.McpStdioServerDefinition);
-  if (typeof register !== 'function' || typeof Definition !== 'function') return; // VS Code < 1.101
-  const serverPath = vscode.Uri.joinPath(ctx.extensionUri, 'dist', 'mcp-server.js').fsPath;
-  const version = String(ctx.extension.packageJSON.version ?? '0.0.0');
-  try {
-    ctx.subscriptions.push(
-      register.call(api.lm, 'porthub.mcp', {
-        provideMcpServerDefinitions: () => [
-          // Run the server with VS Code's bundled Node runtime so users don't need Node installed.
-          new Definition('Port Hub', process.execPath, [serverPath], { ELECTRON_RUN_AS_NODE: '1' }, version),
-        ],
-      }),
-    );
-  } catch (err) {
-    console.warn('[porthub] MCP server registration failed:', err);
-  }
 }
 
 /** VS Code waits (briefly) for the returned promise when the window closes. */

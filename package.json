@@ -3,15 +3,14 @@
   "private": true,
   "workspaces": [
     "packages/core",
-    "packages/mcp",
     "packages/vscode"
   ],
   "scripts": {
-    "build": "npm run build -w porthub-mcp && npm run build -w porthub",
-    "typecheck": "tsc -p packages/core && tsc -p packages/mcp && tsc -p packages/vscode",
+    "build": "npm run build -w porthub",
+    "typecheck": "tsc -p packages/core && tsc -p packages/vscode",
     "test": "vitest run",
     "test:integration": "npm run test:integration -w porthub",
-    "package": "npm run build -w porthub-mcp && npm run package -w porthub"
+    "package": "npm run package -w porthub"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Port Hub (the VS Code extension and the `porthub-mcp` server) are listed here.
+All notable changes to Port Hub are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.1.0] - Unreleased
@@ -28,7 +28,7 @@ First public preview.
 - The "port in use" prompt offers **Use <free port>** to run your command on a free port instead.
 
 ### Shared ports
-- Detects two programs on the same port, one on IPv4 and one on IPv6 (allowed by the OS, but `localhost` and `127.0.0.1` then reach different apps): **⚠ shared** badge, `IPv4`/`IPv6` labels, correct ↗ address per row, a one-time warning with **Move one…**, and a warning in MCP `list_ports`.
+- Detects two programs on the same port, one on IPv4 and one on IPv6 (allowed by the OS, but `localhost` and `127.0.0.1` then reach different apps): **⚠ shared** badge, `IPv4`/`IPv6` labels, correct ↗ address per row, a one-time warning with **Move one…**.
 - `lsof` wildcards now keep their address family (`0.0.0.0` vs `[::]`) instead of both showing as `*`.
 - Move targets the chosen process when several listen on the port.
 
@@ -42,9 +42,6 @@ First public preview.
 
 ### Terminal
 - Detects "port already in use" errors (Node, Vite, Next, Go, Python/uvicorn, Rails, PHP, Spring, CRA, Docker) and offers **Kill & Run Again**. Requires VS Code 1.93+ with shell integration.
-
-### AI agents (MCP)
-- `porthub-mcp` server with `list_ports`, `kill_port`, `find_free_port` and `wait_for_port` tools for Claude Code, Codex, Cursor, Gemini CLI, Copilot and others; registered automatically in VS Code 1.101+.
 
 ### Platforms
 - macOS, Linux (lsof, ss or /proc) and Windows (netstat, tasklist, PowerShell).

@@ -132,31 +132,6 @@ describe('Port Hub extension', function () {
     }
   });
 
-  it('ships an MCP server that starts on VS Code\'s own runtime', async () => {
-    const server = spawn(process.execPath, [path.join(ext.extensionPath, 'dist', 'mcp-server.js')], { env: NODE_ENV, stdio: ['pipe', 'pipe', 'inherit'] });
-    children.push(server);
-    let buf = '';
-    const responses = new Map();
-    server.stdout.on('data', (d) => {
-      buf += d;
-      let i;
-      while ((i = buf.indexOf('\n')) >= 0) {
-        const msg = JSON.parse(buf.slice(0, i));
-        buf = buf.slice(i + 1);
-        responses.get(msg.id)?.(msg);
-      }
-    });
-    const request = (id, method, params) =>
-      new Promise((resolve) => {
-        responses.set(id, resolve);
-        server.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
-      });
-    await request(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'it', version: '1' } });
-    const list = await request(2, 'tools/list', {});
-    assert.deepStrictEqual(list.result.tools.map((t) => t.name).sort(), ['find_free_port', 'kill_port', 'list_ports', 'wait_for_port']);
-    server.kill();
-  });
-
   it('stops only the servers started from this workspace', async () => {
     const fs = require('node:fs');
     const os = require('node:os');
